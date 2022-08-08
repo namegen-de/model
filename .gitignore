@@ -1,0 +1,8 @@
+__pycache__
+
+# ignored dirs
+data
+runs
+
+# ignored files
+test.py

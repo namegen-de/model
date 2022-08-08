@@ -1,0 +1,7 @@
+names-dataset
+torch
+numpy
+pandas
+pycountry
+termcolor
+tqdm

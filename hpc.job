@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#SBATCH --job-name=namegen       # job name
+#SBATCH --output=jobs/%j.out     # output file (%j expands to jobId)
+#SBATCH --cpus-per-task=8        # schedule eight core
+#SBATCH --time=01:00:00          # max run time (hh:mm:ss)
+#SBATCH --partition=brown        # run on red queue
+
+# activate env
+# conda env create --file condaenv.yml
+# conda init bash
+
+# train rnn
+python train.py --save --epochs 10000 --train-countries DE DK UK US TR JP
+
+# sample 5 japanese names
+python sample.py --most-recent --gender M --countries JP --generate 5
