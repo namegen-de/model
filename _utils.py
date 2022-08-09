@@ -5,6 +5,7 @@
 import os
 import json
 import torch
+import pickle
 import argparse
 import unicodedata
 import pandas as pd
@@ -47,14 +48,11 @@ def get_args(script):
 
   return parser.parse_args()
 
-def get_training_info(args, data, device, training_time, country_count):
+def get_training_info(model, args, data, device, training_time, country_count):
   general = {
       'time': datetime.now().strftime("%d/%m/%y, %H:%M:%S"),
       'user': os.path.expanduser("~"),
       'model': 'rnn',
-      'num_chars': data.num_chars,
-      'trained_countries': data.train_countries,
-      'num_countries': len(data.train_countries),
       }
 
   hyperparams = {
@@ -74,10 +72,19 @@ def get_training_info(args, data, device, training_time, country_count):
       'country_count': country_count
       }
 
+  params = {
+      "num_countries": model.num_countries,
+      "num_chars": model.num_chars,
+      "conversions": model.conversions,
+      "embedding_size": model.embedding_size,
+      "hidden_size": model.hidden_size
+      }
+
   return {
       'general': general, 
       'hyperparameters': hyperparams,
-      'training': training
+      'training': training,
+      'params': params
       }
 
 def save_json(d, path):
@@ -87,6 +94,14 @@ def save_json(d, path):
 def load_json(path):
   with open(path, "r") as f:
     return json.loads(f.read())
+
+def save_pkl(d, path):
+  with open(path, "wb") as f:
+    pickle.dump(d, f)
+
+def load_pkl(path):
+  with open(path, "rb") as f:
+    return pickle.loads(f)
 
 def save_run(model, meta, publish=False):
   if not publish:
@@ -98,10 +113,11 @@ def save_run(model, meta, publish=False):
   os.makedirs(path) if not os.path.exists(path) else None
 
   # save trained model
-  torch.save(model, f"{path}/model") # save model
+  torch.save(model.state_dict(), f"{path}/model.pt") # save model
   
   # save meta information
-  save_json(meta, f"{path}/meta")
+  save_pkl(meta, f"{path}/meta.pkl")
+
 
 def load_run(most_recent=True):
   path = os.path.join(CURR, "runs")
@@ -120,10 +136,10 @@ def load_run(most_recent=True):
 
   path = os.path.join(path, run)
 
-  model = torch.load(f"{path}/model")
+  model = torch.load(f"{path}/model.pt")
 
-  with open(f"{path}/meta", "r") as f:
-    meta = json.loads(f.read())
+  with open(f"{path}/meta.pkl", "r") as f:
+    meta = pickle.loads(f)
 
   return model, meta
 

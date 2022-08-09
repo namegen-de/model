@@ -103,7 +103,7 @@ def main():
   done()
 
   # get training info
-  meta = get_training_info(args, data, device, training_time, country_count)
+  meta = get_training_info(model, args, data, device, training_time, country_count)
 
   # save model
   if not args.save:
